@@ -8,7 +8,6 @@ import os
 import random
 import time
 import urllib.parse
-import streamlit.components.v1 as stc
 
 import streamlit as st
 from orchestrator import run_study_assistant
@@ -904,7 +903,7 @@ if st.session_state.study_result is not None:
     # Streamlit always renders tab-0 on rerun; this JS clicks the persisted tab.
     _active = st.session_state.get("active_tab", 0)
     if _active != 0:
-        stc.html(
+        st.iframe(
             f"""
             <script>
             (function() {{
