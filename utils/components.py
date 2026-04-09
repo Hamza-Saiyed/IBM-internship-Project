@@ -12,7 +12,13 @@ def render_interactive_quiz(quiz_data: list[dict], difficulty: str):
     Renders an interactive quiz component from the parsed data dictionary list.
     Handles session state for reveal toggles and score calculation.
     """
-    st.markdown(f'<div class="metric-label" style="margin-bottom:1rem;">{difficulty.upper()} DIFFICULTY QUIZ</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div style="font-size:11px;letter-spacing:0.10em;text-transform:uppercase;'
+        f'color:var(--text-muted);font-weight:700;margin-bottom:var(--sp-4,16px);'
+        f'font-family:var(--font-body,sans-serif);">'
+        f'{difficulty.upper()} DIFFICULTY &nbsp;·&nbsp; INTERACTIVE QUIZ</div>',
+        unsafe_allow_html=True,
+    )
     
     if "quiz_score" not in st.session_state:
         st.session_state.quiz_score = 0
@@ -55,25 +61,45 @@ def render_interactive_quiz(quiz_data: list[dict], difficulty: str):
                 feedback_color = "#10b981" if is_correct else "#ef4444"
                 icon = "✅" if is_correct else "❌"
                 
-                st.markdown(f"""
-                <div style="margin-top: 10px; padding: 15px; border-left: 4px solid {feedback_color}; background: rgba(11,14,20,0.6); backdrop-filter: blur(12px); border-radius: 8px; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                    <strong style="color: {feedback_color};">{icon} Correct Answer: {q_dict['answer_key'].upper()}) {q_dict['options'][q_dict['answer_key']]}</strong>
-                    <p style="margin-top:8px; font-size: 0.95rem; color: #cbd5e1; line-height: 1.6;">{q_dict['explanation']}</p>
-                </div>
-                """, unsafe_allow_html=True)
+                _fb_class = "quiz-feedback-correct" if is_correct else "quiz-feedback-wrong"
+                _fb_color = "var(--accent-secondary,#2DD4BF)" if is_correct else "var(--accent-danger,#F87171)"
+                st.markdown(
+                    f'<div class="{_fb_class}">'
+                    f'<div class="quiz-feedback-label" style="color:{_fb_color};">'
+                    f'{icon} Correct Answer: {q_dict["answer_key"].upper()}) '
+                    f'{q_dict["options"][q_dict["answer_key"]]}</div>'
+                    f'<div class="quiz-feedback-exp">{q_dict["explanation"]}</div>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
             
             st.markdown("<hr style='border-color: rgba(31,41,55,0.6); margin: 1.5rem 0;'>", unsafe_allow_html=True)
             
     # Final Score Block if all revealed
     if len(st.session_state.revealed_questions) == len(quiz_data) and len(quiz_data) > 0:
         score_pct = (st.session_state.quiz_score / len(quiz_data)) * 100
-        st.markdown(f"""
-            <div style="text-align: center; padding: 2.5rem; background: rgba(11,14,20,0.8); backdrop-filter: blur(16px); border: 1px solid rgba(0,224,255,0.15); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
-                <h3 style="margin-bottom:0.5rem; color: #e2e8f0;">Quiz Complete!</h3>
-                <div style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(90deg, #00E0FF, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{st.session_state.quiz_score} / {len(quiz_data)}</div>
-                <div style="font-size: 0.95rem; color: #94a3b8; font-weight: 600; margin-top: 5px;">Score: {score_pct:.0f}%</div>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="text-align:center;padding:2.5rem;'
+            f'background:rgba(13,20,35,0.75);'
+            f'backdrop-filter:blur(24px) saturate(160%);'
+            f'border:1px solid rgba(56,189,248,0.18);'
+            f'border-radius:18px;'
+            f'box-shadow:0 0 32px rgba(56,189,248,0.10),0 8px 32px rgba(0,0,0,0.55);">'
+            f'<div style="font-family:var(--font-display,Manrope,sans-serif);'
+            f'font-size:13px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;'
+            f'color:var(--text-muted,#4A5870);margin-bottom:12px;">Quiz Complete</div>'
+            f'<div style="font-family:var(--font-display,Manrope,sans-serif);'
+            f'font-size:3rem;font-weight:800;'
+            f'background:linear-gradient(135deg,#38BDF8,#A78BFA);'
+            f'-webkit-background-clip:text;-webkit-text-fill-color:transparent;'
+            f'line-height:1.1;">'
+            f'{st.session_state.quiz_score} / {len(quiz_data)}</div>'
+            f'<div style="font-size:13px;color:var(--text-secondary,#8899BB);'
+            f'font-weight:600;margin-top:6px;font-family:var(--font-mono,monospace);">'
+            f'Score: {score_pct:.0f}%</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
 
 import re
@@ -111,13 +137,15 @@ def format_study_notes(notes: str) -> str:
     # and rely on the users browser for standard text selection unless we build a dedicated iframe.
     # We will build a small header block.
     
-    header_block = f'''
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid rgba(0,224,255,0.15); padding-bottom: 10px;">
-        <span style="font-size:0.8rem; color:#A78BFA; font-weight:700; letter-spacing: 0.05em; text-transform: uppercase;">
-            <i style="font-style:normal;">⏱</i> Approx. {read_time} min read
-        </span>
-    </div>
-    '''
+    header_block = (
+        f'<div style="display:flex;justify-content:space-between;align-items:center;'
+        f'margin-bottom:1rem;border-bottom:1px solid rgba(56,189,248,0.12);padding-bottom:10px;">'
+        f'<span style="font-size:11px;color:var(--accent-primary,#38BDF8);'
+        f'font-weight:700;letter-spacing:0.10em;text-transform:uppercase;'
+        f'font-family:var(--font-mono,monospace);">'
+        f'⏱ Approx. {read_time} min read</span>'
+        f'</div>'
+    )
     
     return f'<div class="study-notes-container">{header_block}{formatted}</div>'
     
